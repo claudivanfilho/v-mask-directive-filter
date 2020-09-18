@@ -24,6 +24,7 @@ export const VMaskDirective: DirectiveOptions = {
     },
     vnode: any
   ) => {
+    console.log({vnode})
     const inputElement: HTMLInputElement =
       vnode?.tag === 'input'
         ? (el as HTMLInputElement)
@@ -45,7 +46,6 @@ export const VMaskDirective: DirectiveOptions = {
         }
       }
     }
-    console.log(vnode?.context?.$vnode?.data?.model?.callback);
     new InputMask(
       inputElement,
       mask,
