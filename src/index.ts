@@ -45,12 +45,15 @@ export const VMaskDirective: DirectiveOptions = {
         }
       }
     }
+    console.log(vnode?.context?.$vnode?.data?.model?.callback);
     new InputMask(
       inputElement,
       mask,
       Boolean(shouldUnmask),
       Boolean(parseint),
-      vnode?.data?.model?.callback
+      vnode?.tag === 'input'
+        ? vnode?.context?.$vnode?.data?.model?.callback
+        : vnode?.data?.model?.callback
     );
   }
 };
