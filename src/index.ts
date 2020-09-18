@@ -1,16 +1,22 @@
+import { DirectiveOptions } from 'vue';
+
 export const MASK_TOKEN_PATTERN = {
-  D: /[0-9]/,
-  X: /[a-z]|[A-Z]/,
+  N: /[0-9]/,
+  S: /[a-z]|[A-Z]/,
   A: /[0-9]|[a-z]|[A-Z]/,
-  '*': /.*/
+  X: /.*/
 };
 export type MASK_TOKEN = keyof typeof MASK_TOKEN_PATTERN;
 
-export const VMaskDirective = {
+export const VMaskFilter = (value: string, mask: string) => {
+  return maskTransform(value + '', mask);
+};
+
+export const VMaskDirective: DirectiveOptions = {
   inserted: (
     el: any,
     bindings: {
-      value: string;
+      value?: string;
       modifiers: {
         unmask?: boolean;
         parseint?: boolean;
@@ -23,15 +29,18 @@ export const VMaskDirective = {
         ? (el as HTMLInputElement)
         : (vnode?.componentInstance?.$refs.input as HTMLInputElement);
     const mask = bindings.value;
+    if (!mask) {
+      throw new Error('Mask not provided');
+    }
     const shouldUnmask = bindings.modifiers.unmask;
     const parseint = bindings.modifiers.parseint;
     if (parseint) {
       if (shouldUnmask) {
-        if (mask.match(/[AX*]/)) {
+        if (mask.match(/[AXS*]/)) {
           throw new Error('Invalud mask to parseint modifier');
         }
       } else {
-        if (mask.match(/[^D]/)) {
+        if (mask.match(/[^N]/)) {
           throw new Error('Invalud mask to parseint modifier');
         }
       }
@@ -54,15 +63,7 @@ class InputMask {
     private parseint: boolean,
     private updateModel: (value: string | number) => void
   ) {
-    this.refreshInput(
-      maskTransform({
-        unmaskedValue: inputElement.value,
-        mask: mask
-      }),
-      null,
-      0,
-      true
-    );
+    this.refreshInput(maskTransform(inputElement.value, mask), null, 0, true);
     this.initListeners();
   }
 
@@ -107,10 +108,7 @@ class InputMask {
       event.preventDefault();
       const { value, selectionIndex: newSelectionIndex } = onKeyDown(
         this.parseint
-          ? maskTransform({
-              unmaskedValue: event.target.value,
-              mask: this.mask
-            })
+          ? maskTransform(event.target.value, this.mask)
           : event.target.value,
         this.mask,
         event?.target.selectionStart || 0,
@@ -135,32 +133,26 @@ class InputMask {
       event: any
     ) => {
       this.refreshInput(
-        maskTransform({
-          [this.shouldUnmask ? 'unmaskedValue' : 'maskedValue']: event?.target
-            ?.value,
-          mask: this.mask
-        }),
+        maskTransform(
+          this.shouldUnmask
+            ? event?.target?.value
+            : unmaskTransform(event?.target?.value, this.mask),
+          this.mask
+        ),
         event
       );
     };
   }
 }
 
-export function maskTransform(args: {
-  unmaskedValue?: string | number;
-  maskedValue?: string;
-  mask: string;
-}) {
-  let text = (args.unmaskedValue as string) || '';
-  if (!args.unmaskedValue && args.maskedValue) {
-    text = (unmaskTransform(args.maskedValue, args.mask) as string) || '';
-  }
-  let maskedInput = args.mask;
+export function maskTransform(value: string | number, mask: string) {
+  let text = (value || '') + '';
+  let maskedInput = mask;
   let maskCount = 0;
   let actualTokenIndex = 0;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
-    const nextMaskKey = getNextMaskKeyFromIndex(args.mask, maskCount);
+    const nextMaskKey = getNextMaskKeyFromIndex(mask, maskCount);
     if (nextMaskKey) {
       const { token, index: tokenIndex } = nextMaskKey;
       if (char?.match(MASK_TOKEN_PATTERN[token])) {
