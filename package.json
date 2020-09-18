@@ -1,15 +1,37 @@
 {
   "name": "v-mask-directive-filter",
   "version": "1.0.0",
-  "description": "A vue mask directtive and filter compatible with vue 2.x|3.x and vuetify",
+  "description": "A input mask directtive and filter compatible with vue 2.x|3.x and vuetify",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "test": "jest --config jestconfig.json",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
-  "keywords": [],
+  "keywords": [
+    "vue",
+    "mask",
+    "directive",
+    "filter"
+  ],
   "author": "Claudivan Filho",
   "license": "MIT",
   "types": "dist/index.d.ts",
-  "prepublish": "tsc"
+  "files": [
+    "dist/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/claudivanfilho/v-mask-directive-filter.git"
+  },
+  "prepublish": "tsc",
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  }
 }
