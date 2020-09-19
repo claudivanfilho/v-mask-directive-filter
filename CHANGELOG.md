@@ -1,4 +1,8 @@
-# v1.0.5
+# v1.0.6
+
+- Update refactor
+
+## v1.0.5
 
 - Fix input reference
 
