@@ -116,6 +116,5 @@ Vue.filter('mask', VFilterDirective);
 
 ## Demo
 
-[vue 2.x + vuetify 2.x sample]
-
-[vue 2.x + vuetify 2.x sample]: (https://codesandbox.io/s/flamboyant-kilby-xv8hz)
+**vue 2.x + vuetify 2.x sample**
+https://codesandbox.io/s/flamboyant-kilby-xv8hz
