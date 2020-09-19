@@ -1,14 +1,13 @@
 # V-MASK-DIRECTIVE-FILTER
 
-A input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
+A incredibly lighter input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
 
+<!-- ![github start](https://badgen.net/github/stars/claudivanfilho/v-mask-directive-filter) -->
+
+![npm version](https://badgen.net/npm/v/v-mask-directive-filter)
+![Min](https://badgen.net/bundlephobia/min/v-mask-directive-filter)
+![Min Gziped](https://badgen.net/bundlephobia/minzip/v-mask-directive-filter)
 [![Known Vulnerabilities](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter/badge.svg?targetFile=package.json)](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter?targetFile=package.json)
-
-## Bundle Size (incredibly lighter :star2:)
-
-| Size   | Gziped |
-| ------ | ------ |
-| 3.8 kb | 1.5kb  |
 
 ## Instalation
 
