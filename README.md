@@ -2,7 +2,7 @@
 
 A input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
 
-## Bundle Size (incredibly light :star2:)
+## Bundle Size (incredibly lighter :star2:)
 
 | Size   | Gziped |
 | ------ | ------ |
@@ -18,7 +18,7 @@ or
 $ npm install --save v-mask-directive-filter
 ```
 
-**Directive**
+### Directive
 
 ```javascript
 // Import the directive inside your main.(js|ts)
@@ -28,7 +28,7 @@ import { VMaskDirective } from 'v-mask-directive-filter';
 Vue.directive('mask', VMaskDirective);
 ```
 
-**Filter**
+### Filter
 
 ```javascript
 // Import the filter inside your main.(js|ts)
@@ -115,5 +115,7 @@ Vue.filter('mask', VFilterDirective);
 ```
 
 ## Demo
+
+[vue 2.x + vuetify 2.x sample]
 
 [vue 2.x + vuetify 2.x sample]: (https://codesandbox.io/s/flamboyant-kilby-xv8hz)
