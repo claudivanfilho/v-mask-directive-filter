@@ -7,6 +7,8 @@ A incredibly lighter input mask directive and filter compatible with **vue 2.x**
 ![npm version](https://badgen.net/npm/v/v-mask-directive-filter)
 ![Min](https://badgen.net/bundlephobia/min/v-mask-directive-filter)
 ![Min Gziped](https://badgen.net/bundlephobia/minzip/v-mask-directive-filter)
+
+![Travis Build](https://travis-ci.org/claudivanfilho/v-mask-directive-filter.svg?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter/badge.svg?targetFile=package.json)](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter?targetFile=package.json)
 
 ## Instalation
