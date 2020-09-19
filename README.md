@@ -2,6 +2,8 @@
 
 A input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
 
+[![Known Vulnerabilities](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter/badge.svg?targetFile=package.json)](https://snyk.io/test/github/claudivanfilho/v-mask-directive-filter?targetFile=package.json)
+
 ## Bundle Size (incredibly lighter :star2:)
 
 | Size   | Gziped |
@@ -23,9 +25,9 @@ $ npm install --save v-mask-directive-filter
 ```javascript
 // Import the directive inside your main.(js|ts)
 
-import { VMaskDirective } from 'v-mask-directive-filter';
+import { VMaskDirective } from 'v-mask-directive-filter'
 
-Vue.directive('mask', VMaskDirective);
+Vue.directive('mask', VMaskDirective)
 ```
 
 ### Filter
@@ -33,9 +35,9 @@ Vue.directive('mask', VMaskDirective);
 ```javascript
 // Import the filter inside your main.(js|ts)
 
-import { VFilterDirective } from 'v-mask-directive-filter';
+import { VFilterDirective } from 'v-mask-directive-filter'
 
-Vue.filter('mask', VFilterDirective);
+Vue.filter('mask', VFilterDirective)
 ```
 
 ## Config
