@@ -11,3 +11,9 @@ blocks:
         - name: 'Job #1'
           commands:
             - checkout
+        - name: 'Job #2'
+          commands:
+            - yarn install
+        - name: 'Job #3'
+          commands:
+            - yarn test
