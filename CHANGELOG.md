@@ -1,6 +1,8 @@
-# v1.0.4
+# v1.0.5
 
 - Fix input reference
+
+## v1.0.4
 
 ## v1.0.3
 
@@ -10,6 +12,8 @@
 
 - Add VMaskFilter import
 - Fix typescript issues
+
+## v1.0.1
 
 ## v1.0.0
 
