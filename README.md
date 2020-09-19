@@ -1,4 +1,6 @@
 # V-MASK-DIRECTIVE-FILTER
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclaudivanfilho%2Fv-mask-directive-filter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclaudivanfilho%2Fv-mask-directive-filter?ref=badge_shield)
+
 
 A input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
 
@@ -118,3 +120,7 @@ Vue.filter('mask', VFilterDirective);
 
 **vue 2.x + vuetify 2.x sample**
 https://codesandbox.io/s/flamboyant-kilby-xv8hz
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclaudivanfilho%2Fv-mask-directive-filter.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclaudivanfilho%2Fv-mask-directive-filter?ref=badge_large)
