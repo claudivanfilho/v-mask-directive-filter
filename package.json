@@ -12,7 +12,8 @@
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "keywords": [
     "vue",
@@ -32,8 +33,14 @@
   },
   "prepublish": "tsc",
   "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.10.4",
     "@types/jest": "^26.0.14",
     "@types/vue": "^2.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-jest": "^26.3.0",
+    "coveralls": "^3.1.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.3.0",
     "tslint": "^6.1.3",
