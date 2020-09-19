@@ -1,4 +1,8 @@
-# v1.0.6
+# v1.0.7
+
+- Update tsconfig.json
+
+## v1.0.6
 
 - Update refactor
 
