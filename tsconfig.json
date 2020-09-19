@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "esnext",
+    "target": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
-    "lib": ["ES2019", "dom", "dom.iterable", "scripthost"],
+    "lib": ["ESNext", "dom"],
     "declaration": true,
     "outDir": "dist",
     "strict": true,

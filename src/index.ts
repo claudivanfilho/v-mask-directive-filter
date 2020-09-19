@@ -24,17 +24,25 @@ export const VMaskDirective: DirectiveOptions = {
     },
     vnode: any
   ) => {
-    console.log({vnode})
-    const inputElement: HTMLInputElement =
-      vnode?.tag === 'input'
-        ? (el as HTMLInputElement)
-        : (vnode?.componentInstance?.$refs.input as HTMLInputElement);
+    const nInput = el.getElementsByTagName('input');
+    const isNativeInput = vnode?.tag === 'input';
+    const inputElement: HTMLInputElement = isNativeInput ? el : nInput[0];
     const mask = bindings.value;
     if (!mask) {
       throw new Error('Mask not provided');
     }
     const shouldUnmask = bindings.modifiers.unmask;
     const parseint = bindings.modifiers.parseint;
+    if (isNativeInput && shouldUnmask) {
+      throw new Error(
+        `It's not possible unmask a native input element, you must use uthe method unmaskTransform dynamically inside your component logic`
+      );
+    }
+    if (isNativeInput && parseint) {
+      throw new Error(
+        `It's not possible parseint a native input element, you must use uthe method parseInt dynamically inside your component logic`
+      );
+    }
     if (parseint) {
       if (shouldUnmask) {
         if (mask.match(/[AXS*]/)) {
@@ -47,12 +55,16 @@ export const VMaskDirective: DirectiveOptions = {
       }
     }
     new InputMask(
+      isNativeInput,
       inputElement,
       mask,
       Boolean(shouldUnmask),
       Boolean(parseint),
-      vnode?.tag === 'input'
-        ? vnode?.context?.$vnode?.data?.model?.callback
+      isNativeInput
+        ? (input: HTMLInputElement) => {
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+          }
         : vnode?.data?.model?.callback
     );
   }
@@ -60,11 +72,12 @@ export const VMaskDirective: DirectiveOptions = {
 
 class InputMask {
   constructor(
+    private isNativeInput: boolean,
     private inputElement: HTMLInputElement,
     private mask: string,
     private shouldUnmask: boolean,
     private parseint: boolean,
-    private updateModel: (value: string | number) => void
+    private updateModel: (value: string | number | HTMLInputElement) => void
   ) {
     this.refreshInput(maskTransform(inputElement.value, mask), null, 0, true);
     this.initListeners();
@@ -126,7 +139,7 @@ class InputMask {
         valueToEmit = unmaskTransform(text, this.mask, this.parseint);
       }
       if (!this.parseint || !isNaN(valueToEmit as number)) {
-        this.updateModel(valueToEmit);
+        this.updateModel(this.isNativeInput ? this.inputElement : valueToEmit);
       } else if (this.parseint && isNaN(valueToEmit as number)) {
         this.updateModel('');
       }
