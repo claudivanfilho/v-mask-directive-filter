@@ -1,6 +1,6 @@
 {
   "name": "v-mask-directive-filter",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A input mask directtive and filter compatible with vue 2.x|3.x and vuetify",
   "main": "dist/index.js",
   "scripts": {
