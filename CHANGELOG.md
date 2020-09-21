@@ -1,4 +1,8 @@
-# v1.0.9
+# v1.0.10
+
+- Fix unmask bug
+
+## v1.0.9
 
 - Fix bug of special characters
 

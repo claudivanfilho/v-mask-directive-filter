@@ -54,10 +54,12 @@ Vue.filter('mask', VFilterDirective)
 
 ### Modifiers
 
-| Modifier | Default | Description                                |
-| -------- | ------- | ------------------------------------------ |
-| unmask   | false   | unmask the return value to the model       |
-| parseint | false   | parse to int the return value to the model |
+| Modifier      | Default | Description                                |
+| ------------- | ------- | ------------------------------------------ |
+| unmask        | false   | unmask the return value to the model       |
+| parseint      | false   | parse to int the return value to the model |
+| init-change   | false   | set a initial value to the model on start  |
+| hide-on-empty | false   | hide the mask if no value                  |
 
 ## Usage
 

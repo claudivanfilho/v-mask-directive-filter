@@ -4,7 +4,7 @@ export const MASK_TOKEN_PATTERN = {
   N: /[0-9]/,
   S: /[a-z]|[A-Z]/,
   A: /[0-9]|[a-z]|[A-Z]/,
-  X: /.*/
+  X: /.*/,
 }
 export type MASK_TOKEN = keyof typeof MASK_TOKEN_PATTERN
 
@@ -24,7 +24,7 @@ const KEYBOARD_GHOST_KEYS = [
   'Escape',
   'CapsLock',
   'Dead',
-  'Meta'
+  'Meta',
 ]
 
 const KEYS_BLOCKED = ['Backspace', 'Dead']
@@ -34,7 +34,7 @@ const KEYBOARD_PRESSED_KEYS = [
   'Control',
   'Shift',
   'ArrowRight',
-  'ArrowLeft'
+  'ArrowLeft',
 ]
 
 export function getCustomMaskDirective(
@@ -93,7 +93,7 @@ export function getCustomMaskDirective(
             }
           : vnode?.data?.model?.callback
       )
-    }
+    },
   }
 }
 
@@ -199,7 +199,8 @@ class InputMask {
       this.refreshInput(
         text,
         event,
-        newSelectionStart < 0 ? 0 : newSelectionStart
+        newSelectionStart < 0 ? 0 : newSelectionStart,
+        this.shouldUnmask
       )
       this.formatAndEmit(this.hideOnEmpty && !unmasked.length ? '' : text)
     } else if (diff === 0) {
@@ -354,7 +355,7 @@ function getNextMaskKey(
     if (value[i] === ' ' && mapTokens[mask[i]]) {
       return {
         token: mask[i],
-        index: i
+        index: i,
       }
     }
   }
@@ -368,7 +369,7 @@ function onClickInput(
 ) {
   const nextMaskKey = getNextMaskKey(value, mask, mapTokens)
   return {
-    selectionIndex: nextMaskKey?.index || selectionIndex
+    selectionIndex: nextMaskKey?.index || selectionIndex,
   }
 }
 
@@ -392,7 +393,7 @@ function onAddCharToMask(
   }
   return {
     value: newValue,
-    selectionIndex: newSelectionIndex
+    selectionIndex: newSelectionIndex,
   }
 }
 
