@@ -1,4 +1,8 @@
-# v1.0.8
+# v1.0.9
+
+- Fix bug of special characters
+
+## v1.0.8
 
 - npmignore
 
