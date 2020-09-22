@@ -1,6 +1,8 @@
 # V-MASK-DIRECTIVE-FILTER
 
-A incredibly lighter input mask directive and filter compatible with **vue 2.x** and **vuetify 2.x**
+> ## Support to **Vue 3** available [here](https://github.com/claudivanfilho/v-slim-mask)
+
+A incredibly **LIGHTER** input mask directive and filter compatible with **Vue 2** and **Vuetify 2**
 
 <!-- ![github start](https://badgen.net/github/stars/claudivanfilho/v-mask-directive-filter) -->
 
@@ -29,6 +31,20 @@ $ npm install --save v-mask-directive-filter
 import { VMaskDirective } from 'v-mask-directive-filter'
 
 Vue.directive('mask', VMaskDirective)
+```
+
+or
+
+```javascript
+// using a custom directive
+
+import { getCustomMaskDirective } from 'v-slim-mask'
+
+const VMASKCustomDirective = getCustomMaskDirective({
+  '#': /[0-9]/,
+  Z: /[a-z]|[A-Z]/,
+})
+Vue.directive('mask', VMASKCustomDirective)
 ```
 
 ### Filter

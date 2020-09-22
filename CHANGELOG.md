@@ -1,4 +1,9 @@
-# v1.0.10
+# v1.0.11
+
+- Fix onpaste problems
+- Update refactor code
+
+## v1.0.10
 
 - Fix unmask bug
 
