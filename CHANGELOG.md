@@ -1,4 +1,10 @@
-# v1.0.11
+# v1.0.12
+
+- Fix browsers
+- Fix dead key
+- Fix mobile
+
+## v1.0.11
 
 - Fix onpaste problems
 - Update refactor code

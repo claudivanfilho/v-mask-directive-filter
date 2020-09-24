@@ -1,14 +1,5 @@
 import { DirectiveOptions } from 'vue'
 
-interface EventInputTarget {
-  target: HTMLInputElement
-}
-
-type KeyboardInputEvent = Omit<KeyboardEvent, 'target'> & EventInputTarget
-type FocusInputEvent = Omit<FocusEvent, 'target'> & EventInputTarget
-type MouseInputEvent = Omit<MouseEvent, 'target'> & EventInputTarget
-type ClipboardInputEvent = Omit<ClipboardEvent, 'target'> & EventInputTarget
-
 export type IMASK_TOKEN_PATTERN = {
   [key: string]: RegExp
 }
@@ -17,27 +8,13 @@ export const MASK_TOKEN_PATTERN: IMASK_TOKEN_PATTERN = {
   N: /[0-9]/,
   S: /[a-z]|[A-Z]/,
   A: /[0-9]|[a-z]|[A-Z]/,
-  X: /.*/,
+  C: /[^ ]/,
+  X: /.*/
 }
 export type MASK_TOKEN = keyof typeof MASK_TOKEN_PATTERN
-
-const GHOST_KEYS = [
-  'ArrowUp',
-  'ArrowDown',
-  'ArrowRight',
-  'ArrowLeft',
-  'Tab',
-  'Enter',
-  'Shift',
-  'Alt',
-  'Escape',
-  'CapsLock',
-  'Dead',
-  'Meta',
-]
-const BLOCKED_KEYS = ['Backspace', 'Dead']
-const GHOST_COMBO_KEYS = ['c', 'v', 'z', 'a', 'x']
-const PRESSED_KEYS = ['Meta', 'Control', 'Shift', 'ArrowRight', 'ArrowLeft']
+interface InputEvent extends Event {
+  inputType?: string
+}
 
 export function getCustomMaskDirective(
   mapTokens = MASK_TOKEN_PATTERN
@@ -68,34 +45,32 @@ export function getCustomMaskDirective(
           `It's not possible parseint a native input element, you must use uthe method parseInt dynamically inside your component logic`
         )
       }
-      if (parseint) {
-        if (shouldUnmask) {
-          if (mask.match(/[AXS*]/)) {
-            throw new Error('Invalud mask to parseint modifier')
-          }
-        } else {
-          if (mask.match(/[^N]/)) {
-            throw new Error('Invalud mask to parseint modifier')
-          }
-        }
-      }
+
       new InputMaskDOMManiputalion(
         mapTokens,
-        isNativeInput,
         inputElement,
+        isNativeInput,
         mask,
         Boolean(shouldUnmask),
         Boolean(parseint),
         hideOnEmpty,
         initChange,
         isNativeInput
-          ? (input: HTMLInputElement) => {
-              const event = new Event('input', { bubbles: true })
-              input.dispatchEvent(event)
+          ? (input: any, returnValue?: boolean) => {
+              if (returnValue) {
+                return input.value
+              } else {
+                const event = new Event('input', { bubbles: true })
+                input.dispatchEvent(event)
+              }
             }
-          : vnode?.data?.model?.callback
+          : (val: any, returnValue?: boolean) => {
+              return returnValue
+                ? vnode?.data?.model?.value
+                : vnode?.data?.model?.callback(val)
+            }
       )
-    },
+    }
   }
 }
 
@@ -110,213 +85,122 @@ export const VMaskFilter = (
 export const VMaskDirective: DirectiveOptions = getCustomMaskDirective()
 
 class InputMaskDOMManiputalion {
-  private isKeyboardEvent = false
   private maskService: MaskLogic
+  private lastValue = ''
   constructor(
-    mapTokens = MASK_TOKEN_PATTERN,
-    private isNativeInput: boolean,
+    private mapTokens = MASK_TOKEN_PATTERN,
     private inputElement: HTMLInputElement,
+    private isNativeInput: boolean,
     private mask: string,
     private shouldUnmask: boolean,
     private parseint: boolean,
     private hideOnEmpty: boolean,
     initChange: boolean,
-    private updateModel: (value: string | number | HTMLInputElement) => void
+    private modelHandler: (
+      value: string | number | HTMLInputElement,
+      returnValue?: boolean
+    ) => any
   ) {
     this.maskService = new MaskLogic(mask, mapTokens, parseint)
-    const masked = this.maskService.maskTransform(inputElement.value)
-    this.refreshInput(masked, null, 0, true)
+    console
+    const masked = this.maskService.maskTransform(modelHandler('', true))
+    this.refreshInput(masked)
     if (initChange) {
       this.formatAndEmit(masked)
     }
     this.initListeners()
   }
 
-  refreshInput(
-    text: string,
-    event?:
-      | MouseInputEvent
-      | FocusInputEvent
-      | KeyboardInputEvent
-      | ClipboardInputEvent
-      | null,
-    selectionIndex = 0,
-    putIntoTimeout = false
-  ) {
+  refreshInput(text: string) {
+    const index = this.maskService.getNextMaskIndex(text)
+    console.log(index)
     const hasModifications =
       text !== this.maskService.trimMaskedText(this.mask, 0)
     const mustUpdate = !this.hideOnEmpty || hasModifications
-    const eventType = event?.type
     const action = () => {
-      const inputElement = event?.target || this.inputElement
-      inputElement.value = mustUpdate ? text : ''
-      const newSelectionIndex =
-        eventType === 'click' || eventType === 'focus'
-          ? this.maskService.onClickInput(
-              text,
-              inputElement.selectionStart || 0
-            ).selectionIndex
-          : selectionIndex
-      inputElement.selectionStart = newSelectionIndex
-      inputElement.selectionEnd = newSelectionIndex
+      this.inputElement.value = mustUpdate ? text : ''
+      this.inputElement.selectionStart = index
+      this.inputElement.selectionEnd = index
+      this.lastValue = this.inputElement.value
     }
-    if (putIntoTimeout || (!mustUpdate && eventType === 'keyup')) {
+    if (this.isMobile() || this.shouldUnmask) {
       setTimeout(() => action(), 0)
     } else {
       action()
     }
   }
 
-  onKeyUp = (event: KeyboardInputEvent) => {
-    const key = event.key
-    const start = event.target.selectionStart || 0
-    const end = event.target.selectionEnd || 0
-    const diff = Math.abs(start - end)
-    const isNotSelectionEvent = diff === 0
-    if (key === 'Backspace') {
-      const newSelectionStart = isNotSelectionEvent ? start - 1 : start
-      const newText = this.maskService.replaceAtRange(
-        event.target.value,
-        Array(isNotSelectionEvent ? 1 : diff)
-          .fill(' ')
-          .join(''),
-        newSelectionStart,
-        end
-      )
-      const unmasked = this.maskService.unmaskTransform(newText) as string
-      const text = this.maskService.maskTransform(unmasked)
-      this.refreshInput(
-        text,
-        event,
-        newSelectionStart < 0 ? 0 : newSelectionStart,
-        this.shouldUnmask
-      )
-      this.formatAndEmit(this.hideOnEmpty && !unmasked.length ? '' : text)
-    } else if (isNotSelectionEvent) {
-      const unmask = this.maskService.unmaskTransform(
-        event.target.value
-      ) as string
-      const masked = this.maskService.maskTransform(unmask)
-      const diffText = masked.length - event.target.value.length
-      this.refreshInput(
-        masked,
-        event,
-        isNotSelectionEvent ? start : start - Math.abs(diffText)
-      )
-    }
-    if (PRESSED_KEYS.includes(key)) {
-      this.isKeyboardEvent = false
-    }
-  }
-
-  appendTextAtIndex(originalText: string, text: string, index: number) {
-    return (
-      originalText.substring(0, index) + text + originalText.substring(index)
+  remask(text: string, fromUnmasked = true) {
+    return this.maskService.maskTransform(
+      this.maskService.unmaskTransform(text, fromUnmasked, false)
     )
   }
 
-  getValueAndIndexAfterInsertAt(
-    text: string,
-    index: number,
-    textToInsert: string
-  ) {
-    const unmaskAll = this.maskService.unmaskTransform(text) as string
-    const unmaskUntilIndex = this.maskService.unmaskTransform(
-      text.substr(0, index)
-    ) as string
-    const maskedUntilIndexWithChar = this.maskService.maskTransform(
-      unmaskUntilIndex + textToInsert
-    )
-    const valueWithChar = this.appendTextAtIndex(
-      unmaskAll,
-      textToInsert,
-      unmaskUntilIndex.length
-    )
-    const newValue = this.maskService.maskTransform(valueWithChar)
-    const nextkey = this.maskService.getNextMaskKey(maskedUntilIndexWithChar)
-    return {
-      index: nextkey?.index || this.mask.length,
-      text: newValue,
-    }
+  popValue(text: string) {
+    const unmasked = this.maskService.unmaskTransform(text, false) as string
+    return this.maskService.maskTransform(unmasked.slice(0, -1))
   }
 
-  onKeyDown = (event: KeyboardInputEvent) => {
-    const key = event.key
-    if (!this.isKeyboardEvent && PRESSED_KEYS.includes(key)) {
-      this.isKeyboardEvent = true
-    }
-    if (this.isKeyboardEvent && GHOST_COMBO_KEYS.includes(key)) {
-      return
-    }
-    if (!this.isKeyboardEvent && !GHOST_KEYS.includes(key)) {
-      event.preventDefault()
-    }
-    if (
-      !GHOST_KEYS.includes(key) &&
-      !BLOCKED_KEYS.includes(key) &&
-      !this.isKeyboardEvent
-    ) {
-      const selectionIndex = event.target.selectionStart || 0
-      const value = event.target.value
-      const { text, index } = this.getValueAndIndexAfterInsertAt(
-        value,
-        selectionIndex,
-        key
-      )
-      this.refreshInput(text, event, index, this.shouldUnmask)
-      this.formatAndEmit(text)
-    }
-  }
+  isMobile = () =>
+    /\b(BlackBerry|webOS|iPhone|IEMobile|Android|Windows Phone|iPad|iPod)\b/i.test(
+      navigator.userAgent
+    )
 
-  onPaste = async (event: ClipboardInputEvent) => {
-    const selectionIndex = event.target.selectionStart || 0
-    const value = event.target.value
-    const nextToken = this.maskService.getNextMaskKey(value)
-    const nextTokenIndex = nextToken?.index
-
-    const indexToAppend =
-      nextTokenIndex || 0 > selectionIndex
-        ? selectionIndex
-        : nextTokenIndex || selectionIndex
-    const clipboard = await navigator.clipboard.readText()
-    const { text, index } = this.getValueAndIndexAfterInsertAt(
+  onInput = (event: any) => {
+    const target: HTMLInputElement | null = event.target as HTMLInputElement
+    const value = target.value
+    const start = target.selectionStart || 0
+    const isComposition = event.inputType === 'insertCompositionText'
+    let finalValue = this.remask(
       value,
-      indexToAppend,
-      clipboard
+      event.inputType === 'insertFromPaste' || this.hideOnEmpty
     )
-    this.refreshInput(text, event, index)
-    this.formatAndEmit(text)
+    if (event.inputType === 'deleteContentBackward') {
+      if (finalValue === this.lastValue) {
+        finalValue = this.popValue(finalValue)
+      }
+    }
+    const pattern = this.mapTokens[this.mask[start - 1]]
+    if (
+      finalValue !== value &&
+      isComposition &&
+      pattern &&
+      !value[start - 1].match(pattern)
+    ) {
+      this.refreshInput(finalValue)
+    } else if (!(isComposition && !this.isMobile())) {
+      this.refreshInput(finalValue)
+    }
+    this.formatAndEmit(finalValue)
   }
 
-  onMouseEvent = (event: MouseEvent & EventInputTarget) => {
-    const text = this.shouldUnmask
-      ? event.target.value
-      : this.maskService.unmaskTransform(event.target.value)
-    const newSelectionIndex = event.target.selectionEnd || 0
-    this.refreshInput(
-      this.maskService.maskTransform(text),
-      event,
-      newSelectionIndex
-    )
-  }
+  onClick = (event: any) => this.refreshInput(event.target.value)
 
   initListeners() {
-    this.inputElement.onkeyup = this.onKeyUp as any
-    this.inputElement.onkeydown = this.onKeyDown as any
-    this.inputElement.onpaste = this.onPaste as any
-    this.inputElement.onblur = this.inputElement.onfocus = this.inputElement.onclick = this
-      .onMouseEvent as any
+    this.inputElement.oninput = this.onInput
+    this.inputElement.onclick = this.onClick
+    this.inputElement.onkeyup = (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        this.onClick(e)
+      }
+    }
   }
 
   formatAndEmit(text: string) {
     let valueToEmit: string | number = text
-    if (this.shouldUnmask) {
+    console.log({ h: this.hideOnEmpty, text, m: this.mask })
+    if (
+      this.hideOnEmpty &&
+      text === this.maskService.trimMaskedText(this.mask, 0)
+    ) {
+      valueToEmit = ''
+    } else if (this.shouldUnmask) {
       valueToEmit = this.maskService.unmaskTransform(text)
     }
     if (!this.parseint || !isNaN(valueToEmit as number)) {
-      this.updateModel(this.isNativeInput ? this.inputElement : valueToEmit)
+      this.modelHandler(this.isNativeInput ? this.inputElement : valueToEmit)
     } else if (this.parseint && isNaN(valueToEmit as number)) {
-      this.updateModel('')
+      this.modelHandler('')
     }
   }
 }
@@ -331,16 +215,17 @@ class MaskLogic {
   maskTransform(value: string | number) {
     const text = (value || '') + ''
     let maskedInput = this.trimMaskedText(this.mask, 0)
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i]
-      const nextMaskKey = this.getNextMaskKey(maskedInput)
-      if (nextMaskKey) {
-        const { token, index: tokenIndex } = nextMaskKey
-        if (char.match(this.mapTokens[token])) {
-          maskedInput = this.replaceAtRange(maskedInput, char, tokenIndex)
+    let lastIndex = 0
+    for (let i = 0; i < this.mask.length; i++) {
+      const pattern = this.mapTokens[this.mask[i]]
+      if (pattern) {
+        for (let j = lastIndex; j < text.length; j++) {
+          if (text[j].match(pattern)) {
+            maskedInput = this.replaceAtRange(maskedInput, text[j], i)
+            lastIndex = j + 1
+            break
+          }
         }
-      } else {
-        break
       }
     }
     return maskedInput
@@ -357,22 +242,13 @@ class MaskLogic {
     return newText
   }
 
-  getNextMaskKey(value: string) {
+  getNextMaskIndex(value: string) {
     for (let i = 0; i < value.length; i++) {
       if (value[i] === ' ' && this.mapTokens[this.mask[i]]) {
-        return {
-          token: this.mask[i],
-          index: i,
-        }
+        return i
       }
     }
-  }
-
-  onClickInput(value: string, selectionIndex: number) {
-    const nextMaskKey = this.getNextMaskKey(value)
-    return {
-      selectionIndex: nextMaskKey?.index || selectionIndex,
-    }
+    return value.length
   }
 
   replaceAtRange(
@@ -388,17 +264,30 @@ class MaskLogic {
     )
   }
 
-  unmaskTransform(text: string) {
+  unmaskTransform(text: string, fromUnmasked = false, useParseInt = true) {
     let newText = ''
+    let lastValueIndex = 0
     for (let i = 0; i < this.mask.length; i++) {
       const pattern = this.mapTokens[this.mask[i]]
       if (pattern) {
-        if (text[i]?.match(pattern)) {
-          newText += text[i]
+        if (fromUnmasked) {
+          for (let j = lastValueIndex; j < text.length; j++) {
+            if (text[j]?.match(pattern)) {
+              newText += text[j]
+              lastValueIndex = j + 1
+            }
+          }
+        } else {
+          if (text[i]?.match(pattern)) {
+            newText += text[i]
+          }
         }
       }
     }
-    return this.parseToInt ? parseInt(newText) : newText
+    if (useParseInt) {
+      return this.parseToInt ? parseInt(newText) : newText
+    }
+    return newText
   }
 }
 
@@ -406,9 +295,13 @@ export function unmaskTransform(
   value: string,
   mask: string,
   mapTokens = MASK_TOKEN_PATTERN,
+  fromUnmasked = false,
   parseToInt = false
 ) {
-  return new MaskLogic(mask, mapTokens, parseToInt).unmaskTransform(value)
+  return new MaskLogic(mask, mapTokens, parseToInt).unmaskTransform(
+    value,
+    fromUnmasked
+  )
 }
 
 export function maskTransform(
