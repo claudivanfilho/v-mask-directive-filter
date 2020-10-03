@@ -9,12 +9,9 @@ export const MASK_TOKEN_PATTERN: IMASK_TOKEN_PATTERN = {
   S: /[a-z]|[A-Z]/,
   A: /[0-9]|[a-z]|[A-Z]/,
   C: /[^ ]/,
-  X: /.*/
+  X: /.*/,
 }
 export type MASK_TOKEN = keyof typeof MASK_TOKEN_PATTERN
-interface InputEvent extends Event {
-  inputType?: string
-}
 
 export function getCustomMaskDirective(
   mapTokens = MASK_TOKEN_PATTERN
@@ -70,7 +67,7 @@ export function getCustomMaskDirective(
                 : vnode?.data?.model?.callback(val)
             }
       )
-    }
+    },
   }
 }
 
@@ -102,7 +99,6 @@ class InputMaskDOMManiputalion {
     ) => any
   ) {
     this.maskService = new MaskLogic(mask, mapTokens, parseint)
-    console
     const masked = this.maskService.maskTransform(modelHandler('', true))
     this.refreshInput(masked)
     if (initChange) {
@@ -113,7 +109,6 @@ class InputMaskDOMManiputalion {
 
   refreshInput(text: string) {
     const index = this.maskService.getNextMaskIndex(text)
-    console.log(index)
     const hasModifications =
       text !== this.maskService.trimMaskedText(this.mask, 0)
     const mustUpdate = !this.hideOnEmpty || hasModifications
@@ -188,7 +183,6 @@ class InputMaskDOMManiputalion {
 
   formatAndEmit(text: string) {
     let valueToEmit: string | number = text
-    console.log({ h: this.hideOnEmpty, text, m: this.mask })
     if (
       this.hideOnEmpty &&
       text === this.maskService.trimMaskedText(this.mask, 0)
